@@ -1,4 +1,6 @@
-To run application: just run: docker compose up –build
+To run application: just run: 
+docker compose up –build
+
 And now you can access API documentation on:
 http://localhost:8080/swagger-ui/index.html 
 
