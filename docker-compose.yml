@@ -1,0 +1,39 @@
+version: '3'
+services:
+
+  redis:
+    image: docker.arvancloud.ir/redis:7.2.4
+    container_name: redis
+    tty: true
+    stdin_open: true
+    environment:
+      - REDIS_PORT=6379
+    ports:
+      - "6379:6379"
+    networks:
+      - senior_network
+
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: senior-api
+    tty: true
+    stdin_open: true
+    ports:
+      - "8080:8080"
+    networks:
+        - senior_network
+    depends_on:
+        - redis
+    volumes:
+      - ./senior-api:/app
+
+volumes:
+  senior_data:
+    driver: local
+
+networks:
+  senior_network:
+    driver: bridge
