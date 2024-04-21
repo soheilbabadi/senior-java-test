@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.Timer;
 import ir.smartpath.senior.exception.NotFoundException;
 import ir.smartpath.senior.model.*;
 import lombok.RequiredArgsConstructor;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,9 +64,10 @@ public class SearchServiceImpl implements SearchService {
         return new ResponseData(musics, books);
     }
 
+    @Synchronized
     @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 10000), retryFor = {SocketTimeoutException.class})
     @Cacheable(key = "#term")
-    public synchronized List<Music> getMusic(String term) {
+    public List<Music> getMusic(String term) {
         Timer.Sample sample = Timer.start();
         term = term.trim().replace(" ", "+");
         String url = ITUNES_API_URL + "term=" + term + "&limit=" + limit + "&media=music";
@@ -84,9 +86,10 @@ public class SearchServiceImpl implements SearchService {
         return null;
     }
 
+    @Synchronized
     @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 10000), retryFor = {SocketTimeoutException.class})
     @Cacheable(key = "#term")
-    public synchronized List<Book> getBook(String term) {
+    public List<Book> getBook(String term) {
         Timer.Sample sample = Timer.start();
         term = term.trim().replace(" ", "+");
         String url = googleApi + term + "&key=" + googleApiKey + "&maxResults=" + limit + "&printType=books&orderBy=relevance";
@@ -125,22 +128,16 @@ public class SearchServiceImpl implements SearchService {
     private List<Book> convertGoogleResponseToBook(GoogleBooksApiResponse googleResponse) {
 
         return googleResponse.getItems().stream().map(item -> {
-            var entity = new Book();
-            entity.setTitle(item.getVolumeInfo().getTitle());
-            entity.setAuthors(item.getVolumeInfo().getAuthors());
-            entity.setPublisher(item.getVolumeInfo().getPublisher());
-            entity.setPublishedDate(item.getVolumeInfo().getPublishedDate());
+            var volumeInfo = item.getVolumeInfo();
+            var book = new Book();
+            BeanUtils.copyProperties(volumeInfo, book);
             if (item.getVolumeInfo().getDescription() != null) {
-                entity.setDescription(item.getVolumeInfo().getDescription().substring(0, Math.min(item.getVolumeInfo().getDescription().length(), 100)) + "...");
-
+                book.setDescription(item.getVolumeInfo().getDescription().substring(0, Math.min(item.getVolumeInfo().getDescription().length(), 100)) + "...");
             } else {
-                entity.setDescription("No description available");
+                book.setDescription("No description available");
             }
-            entity.setPageCount(item.getVolumeInfo().getPageCount());
-            entity.setCategories(item.getVolumeInfo().getCategories());
-            return entity;
+            return book;
         }).toList();
-
 
     }
 }
