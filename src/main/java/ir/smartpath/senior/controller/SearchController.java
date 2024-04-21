@@ -44,10 +44,10 @@ public class SearchController {
     }
 
     )
-    @GetMapping("/keyword")
-    public ResponseEntity<ResponseData> search(@PathVariable String keyword) {
+    @GetMapping("/{term}")
+    public ResponseEntity<ResponseData> search(@PathVariable String term) {
 
-        return ResponseEntity.ok(searchService.search(keyword));
+        return ResponseEntity.ok(searchService.search(term));
     }
 
 }
