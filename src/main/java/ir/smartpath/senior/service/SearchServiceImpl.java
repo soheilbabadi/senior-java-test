@@ -132,7 +132,8 @@ public class SearchServiceImpl implements SearchService {
             var book = new Book();
             BeanUtils.copyProperties(volumeInfo, book);
             if (item.getVolumeInfo().getDescription() != null) {
-                book.setDescription(item.getVolumeInfo().getDescription().substring(0, Math.min(item.getVolumeInfo().getDescription().length(), 100)) + "...");
+                book.setDescription(item.getVolumeInfo().getDescription()
+                        .substring(0, Math.min(item.getVolumeInfo().getDescription().length(), 100)) + "...");
             } else {
                 book.setDescription("No description available");
             }
