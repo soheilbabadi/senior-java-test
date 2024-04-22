@@ -38,5 +38,5 @@ spring:
             port: 6379
     cache:
       redis:
-          time-to-live: 100s
+          time-to-live: 1000s
 
